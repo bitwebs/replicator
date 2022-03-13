@@ -1,9 +1,9 @@
 const pump = require('pump')
-const hyperswarm = require('hyperswarm')
-const Protocol = require('hypercore-protocol')
+const bitswarm = require('@web4/bitswarm')
+const Protocol = require('@web4/bit-protocol')
 const { EventEmitter } = require('events')
 
-const promises = Symbol.for('hypercore.promises')
+const promises = Symbol.for('unichain.promises')
 
 class Event {
   constructor () {
@@ -26,7 +26,7 @@ module.exports = class Replicator extends EventEmitter {
   constructor (options = {}) {
     super()
 
-    this.swarm = hyperswarm({
+    this.swarm = bitswarm({
       announceLocalAddress: !!options.announceLocalAddress,
       preferredPort: 49737,
       bootstrap: options.bootstrap,
@@ -41,12 +41,12 @@ module.exports = class Replicator extends EventEmitter {
     this.streams = new Set()
   }
 
-  static replicate (cores, options) {
+  static replicate (chains, options) {
     const r = new Replicator({ createStream () { return null } })
-    if (!Array.isArray(cores)) cores = [cores]
+    if (!Array.isArray(chains)) chains = [chains]
 
-    for (const core of cores) {
-      r.add(core, options).catch(() => {})
+    for (const chain of chains) {
+      r.add(chain, options).catch(() => {})
     }
 
     return r
@@ -61,8 +61,8 @@ module.exports = class Replicator extends EventEmitter {
 
     let stream = this.createStream(info.client)
 
-    for (const { core, options, one } of this.swarming.values()) {
-      stream = core.replicate(info.client, { ...options, stream })
+    for (const { chain, options, one } of this.swarming.values()) {
+      stream = chain.replicate(info.client, { ...options, stream })
       one.emit()
     }
 
@@ -83,8 +83,8 @@ module.exports = class Replicator extends EventEmitter {
       return
     }
 
-    const { core, options, one } = this.swarming.get(key)
-    core.replicate(false, { ...options, stream })
+    const { chain, options, one } = this.swarming.get(key)
+    chain.replicate(false, { ...options, stream })
     one.emit()
   }
 
@@ -102,10 +102,10 @@ module.exports = class Replicator extends EventEmitter {
     })
   }
 
-  async add (core, options = {}) {
-    await ready(core)
+  async add (chain, options = {}) {
+    await ready(chain)
 
-    const key = core.discoveryKey.toString('hex')
+    const key = chain.discoveryKey.toString('hex')
     const { announce, lookup } = options
     const defaultLookup = lookup === undefined && announce === undefined
     const added = this.swarming.has(key)
@@ -113,29 +113,29 @@ module.exports = class Replicator extends EventEmitter {
     const one = new Event()
     const all = new Event()
 
-    this.swarming.set(key, { core, options, one, all })
+    this.swarming.set(key, { chain, options, one, all })
 
     if (announce || lookup || defaultLookup) {
-      this.swarm.join(core.discoveryKey, { announce: !!announce, lookup: !!lookup || defaultLookup })
+      this.swarm.join(chain.discoveryKey, { announce: !!announce, lookup: !!lookup || defaultLookup })
       this.swarm.flush(onflush)
     } else {
       onflush()
     }
 
-    if (core.timeouts) { // current timeout api support ...
-      const { update, get } = core.timeouts
-      if (update) core.timeouts.update = (cb) => one.on(() => update(cb))
-      if (get) core.timeouts.get = (cb) => all.on(() => get(cb))
+    if (chain.timeouts) { // current timeout api support ...
+      const { update, get } = chain.timeouts
+      if (update) chain.timeouts.update = (cb) => one.on(() => update(cb))
+      if (get) chain.timeouts.get = (cb) => all.on(() => get(cb))
     }
 
     if (!added) {
       for (const stream of this.streams) {
-        core.replicate(false, { ...options, stream })
+        chain.replicate(false, { ...options, stream })
         one.emit()
       }
     }
 
-    this.emit('add', core, options)
+    this.emit('add', chain, options)
 
     function onflush () {
       one.emit()
@@ -143,27 +143,27 @@ module.exports = class Replicator extends EventEmitter {
     }
   }
 
-  async remove (core) {
-    await ready(core)
+  async remove (chain) {
+    await ready(chain)
 
-    const key = core.discoveryKey.toString('hex')
+    const key = chain.discoveryKey.toString('hex')
 
     if (!this.swarming.has(key)) return
 
     const { options } = this.swarming.get(key)
     this.swarming.delete(key)
-    this.swarm.leave(core.discoveryKey)
+    this.swarm.leave(chain.discoveryKey)
 
-    this.emit('remove', core, options)
+    this.emit('remove', chain, options)
   }
 }
 
-function ready (core) {
-  if (!core.ready) return
-  if (core[promises]) return core.ready()
+function ready (chain) {
+  if (!chain.ready) return
+  if (chain[promises]) return chain.ready()
 
   return new Promise((resolve, reject) => {
-    const p = core.ready((err) => {
+    const p = chain.ready((err) => {
       if (err) return reject(err)
       resolve()
     })

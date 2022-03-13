@@ -1,24 +1,24 @@
-const hypercore = require('hypercore')
+const unichain = require('@web4/unichain')
 const ram = require('random-access-memory')
 const { get, append, test } = require('./helpers')
 
 test('basic', async function (t, replicator, clone) {
-  const core = hypercore(ram)
+  const chain = unichain(ram)
 
-  replicator.add(core, { announce: true, lookup: false })
+  replicator.add(chain, { announce: true, lookup: false })
 
-  await append(core, 'test')
+  await append(chain, 'test')
 
-  const coreClone = hypercore(ram, core.key)
+  const chainClone = unichain(ram, chain.key)
 
-  clone.add(coreClone, { lookup: true, announce: false })
+  clone.add(chainClone, { lookup: true, announce: false })
 
-  t.same(await get(coreClone, 0), Buffer.from('test'))
+  t.same(await get(chainClone, 0), Buffer.from('test'))
 })
 
-test('multi core swarm', async function (t, replicator, clone) {
-  const a = hypercore(ram)
-  const b = hypercore(ram)
+test('multi chain swarm', async function (t, replicator, clone) {
+  const a = unichain(ram)
+  const b = unichain(ram)
 
   replicator.add(a, { announce: true, lookup: false })
   replicator.add(b, { announce: true, lookup: false })
@@ -26,8 +26,8 @@ test('multi core swarm', async function (t, replicator, clone) {
   await append(a, 'a test')
   await append(b, 'b test')
 
-  const aClone = hypercore(ram, a.key)
-  const bClone = hypercore(ram, b.key)
+  const aClone = unichain(ram, a.key)
+  const bClone = unichain(ram, b.key)
 
   clone.add(bClone, { lookup: true, announce: false })
   clone.add(aClone, { lookup: true, announce: false })
@@ -36,17 +36,17 @@ test('multi core swarm', async function (t, replicator, clone) {
   t.same(await get(bClone, 0), Buffer.from('b test'))
 })
 
-test('multi core swarm higher latency', async function (t, replicator, clone) {
-  const a = hypercore(ram)
-  const b = hypercore(ram)
+test('multi chain swarm higher latency', async function (t, replicator, clone) {
+  const a = unichain(ram)
+  const b = unichain(ram)
 
   replicator.add(a, { announce: true, lookup: false })
 
   await append(a, 'a test')
   await append(b, 'b test')
 
-  const aClone = hypercore(ram, a.key)
-  const bClone = hypercore(ram, b.key)
+  const aClone = unichain(ram, a.key)
+  const bClone = unichain(ram, b.key)
 
   clone.add(bClone, { lookup: true, announce: false })
   clone.add(aClone, { lookup: true, announce: false })

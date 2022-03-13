@@ -4,27 +4,27 @@ const Replicator = require('../../')
 
 module.exports = { get, append, ready, test }
 
-function get (core, seq) {
+function get (chain, seq) {
   return new Promise((resolve, reject) => {
-    core.get(seq, (err, data) => {
+    chain.get(seq, (err, data) => {
       if (err) return reject(err)
       resolve(data)
     })
   })
 }
 
-function append (core, data) {
+function append (chain, data) {
   return new Promise((resolve, reject) => {
-    core.append(data, (err) => {
+    chain.append(data, (err) => {
       if (err) return reject(err)
       resolve()
     })
   })
 }
 
-function ready (core) {
+function ready (chain) {
   return new Promise((resolve, reject) => {
-    core.ready((err) => {
+    chain.ready((err) => {
       if (err) return reject(err)
       resolve()
     })

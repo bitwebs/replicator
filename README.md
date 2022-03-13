@@ -1,24 +1,24 @@
-# @hyperswarm/replicator
+# @web4/replicator
 
-Replicate data structures easily using hyperswarm
+Replicate data structures easily using bitswarm
 
 ## Install
 
 ```js
-npm install @hyperswarm/replicator
+npm install @web4/replicator
 ```
 
 ## Usage
 
 You data structure has to support a .replicate() stream, then you can replicate
-them using the hyperswarm replicator.
+them using the bitswarm replicator.
 
 ```js
-const Replicator = require('@hyperswarm/replicator')
+const Replicator = require('@web4/replicator')
 
 const r = new Replicator()
 
-r.add(aHypercore, {
+r.add(aUnichain, {
   live: true // passed to .replicate
 })
 ```
@@ -35,9 +35,9 @@ Make a new replicator. Options include:
 }
 ```
 
-#### `promise = r.add(hyperDataStructure, [options])`
+#### `promise = r.add(bitDataStructure, [options])`
 
-Add a hyper* data structure to replicate.
+Add a bit* data structure to replicate.
 
 ```js
 {
@@ -56,21 +56,21 @@ Add a hyper* data structure to replicate.
 Promise resolves when the data structure has been fully added.
 
 
-#### `promise = r.remove(hyperDataStructure)`
+#### `promise = r.remove(bitDataStructure)`
 
 Remove a data structure from replication.
 Promise resolves when the data structure has been fully removed.
 
 #### `r.swarm`
 
-The associated hyperswarm instance.
+The associated bitswarm instance.
 
 #### `r.on('discovery-key', (discoveryKey, remoteStream) => ...)`
 
 Emitted when a remote asks for a discovery key of a data structure you are
 not currently replicating.
 
-#### `r = Replicator.replicate(hyperDataStructure[s])`
+#### `r = Replicator.replicate(bitDataStructure[s])`
 
 Easy "one off" replication of one or more data structures.
 
