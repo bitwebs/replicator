@@ -1,6 +1,6 @@
 {
   "name": "@web4/replicator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Replicates data structures easily using bitswarm",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@web4/bit-protocol": "^1.0.0",
-    "bitswarm": "^1.0.0",
+    "@web4/bitswarm": "^1.0.0",
     "pump": "^3.0.0"
   },
   "devDependencies": {
